@@ -17,7 +17,16 @@ const useLocalStorageState = (
     // give it an init function that only gets called on init
     return typeof initialValue === 'function' ? initialValue() : initialValue
   })
+
+  // object you can change without re-rendering
+  const prevKeyRef = React.useRef(key)
+
   React.useEffect(() => {
+    const prevKey = prevKeyRef.current
+    if (key !== prevKey) {
+      window.localStorage.removeItem(prevKey)
+    }
+    prevKeyRef.current = key
     window.localStorage.setItem(serialize(key), item)
   }, [key, item, serialize])
 
