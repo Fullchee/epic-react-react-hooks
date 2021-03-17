@@ -6,7 +6,7 @@ import * as React from 'react'
 const useLocalStorageState = (
   key,
   initialValue,
-  {serialize = JSON.stringify, deserialize = JSON.parse},
+  {serialize = JSON.stringify, deserialize = JSON.parse} = {},
 ) => {
   const [item, setItem] = React.useState(() => {
     const localStorageValue = window.localStorage.getItem(key)
