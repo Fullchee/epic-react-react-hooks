@@ -3,13 +3,23 @@
 
 import * as React from 'react'
 
-const useLocalStorageState = (key, initialValue) => {
-  const [item, setItem] = React.useState(
-    () => JSON.parse(window.localStorage.getItem(key)) || initialValue,
-  )
+const useLocalStorageState = (
+  key,
+  initialValue,
+  {serialize = JSON.stringify, deserialize = JSON.parse},
+) => {
+  const [item, setItem] = React.useState(() => {
+    const localStorageValue = window.localStorage.getItem(key)
+    if (typeof localStorageValue !== undefined) {
+      deserialize(localStorageValue)
+    }
+    // expensive init computation (more expensive than localStorage.get())
+    // give it an init function that only gets called on init
+    return typeof initialValue === 'function' ? initialValue() : initialValue
+  })
   React.useEffect(() => {
-    window.localStorage.setItem(JSON.stringify(key), item)
-  }, [key, item])
+    window.localStorage.setItem(serialize(key), item)
+  }, [key, item, serialize])
 
   return [item, setItem]
 }
