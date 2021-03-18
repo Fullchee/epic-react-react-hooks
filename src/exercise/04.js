@@ -6,7 +6,11 @@ import * as React from 'react'
 function Board() {
   // 🐨 squares is the state for this component. Add useState for squares
   // const squares = Array(9).fill(null)
-  const [squares, setSquares] = React.useState(Array(9).fill(null))
+  const [squares, setSquares] = React.useState(
+    () =>
+      JSON.parse(window.localStorage.getItem('squares')) ||
+      Array(9).fill(null),
+  )
 
   // 🐨 We'll need the following bits of derived state:
   // - nextValue ('X' or 'O')
@@ -20,6 +24,11 @@ function Board() {
   const nextValue = calculateNextValue(squares)
   const winner = calculateWinner(squares)
   const status = calculateStatus(winner, squares, nextValue)
+
+  React.useEffect(
+    () => window.localStorage.setItem('squares', JSON.stringify(squares)),
+    [squares],
+  )
 
   // This is the function your square click handler will call. `square` should
   // be an index. So if they click the center square, this will be `4`.
