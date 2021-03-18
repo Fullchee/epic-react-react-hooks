@@ -6,7 +6,7 @@ import * as React from 'react'
 function Board() {
   // 🐨 squares is the state for this component. Add useState for squares
   // const squares = Array(9).fill(null)
-  const [squares, setSquares] = React.useState(() => Array(9).fill(null))
+  const [squares, setSquares] = React.useState(Array(9).fill(null))
 
   // 🐨 We'll need the following bits of derived state:
   // - nextValue ('X' or 'O')
@@ -27,7 +27,7 @@ function Board() {
     // 🐨 first, if there's already winner or there's already a value at the
     // given square index (like someone clicked a square that's already been
     // clicked), then return early so we don't make any state changes
-    if (winner) {
+    if (winner || squares[square]) {
       return
     }
     // 🦉 It's typically a bad idea to mutate or directly change state in React.
@@ -40,11 +40,9 @@ function Board() {
     // 💰 `squaresCopy[square] = nextValue`
     //
     // 🐨 set the squares to your copy
-    if (squares[square] === null) {
-      const copy = [...squares]
-      copy[square] = nextValue
-      setSquares(copy)
-    }
+    const copy = [...squares]
+    copy[square] = nextValue
+    setSquares(copy)
   }
 
   function restart() {
