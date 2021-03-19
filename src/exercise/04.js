@@ -4,20 +4,45 @@
 import * as React from 'react'
 import {useLocalStorageState} from '../utils'
 
+function BoardHistory({boards, onClick, currentMove}) {
+  const calculateButtonText = i => {
+    let result = 'Go to'
+
+    if (i === 0) {
+      result += ' game start'
+    } else {
+      result += ` move #${i}`
+    }
+
+    if (i === currentMove) {
+      result += ' (current)'
+    }
+    return result
+  }
+
+  return (
+    <ol>
+      {boards.map((board, i) => {
+        return (
+          <li>
+            <button disabled={i === currentMove} onClick={onClick(i)}>
+              {calculateButtonText(i)}
+            </button>
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
+
 function Board() {
   // 🐨 squares is the state for this component. Add useState for squares
   // const squares = Array(9).fill(null)
-  const [squares, setSquares] = useLocalStorageState("squares", Array(9).fill(null))
+  const initialState = [Array(9).fill(null)]
+  const [boards, setBoards] = useLocalStorageState('boards', initialState)
+  const [currentMove, setCurrentMove] = React.useState(0)
+  const squares = boards[currentMove]
 
-  // 🐨 We'll need the following bits of derived state:
-  // - nextValue ('X' or 'O')
-  // - winner ('X', 'O', or null)
-  // - status (`Winner: ${winner}`, `Scratch: Cat's game`, or `Next player: ${nextValue}`)
-  // 💰 I've written the calculations for you! So you can use my utilities
-  // below to create these variables
-
-  // derived state
-  // const [nextValue, setNextValue] = React.useState('X')
   const nextValue = calculateNextValue(squares)
   const winner = calculateWinner(squares)
   const status = calculateStatus(winner, squares, nextValue)
@@ -41,15 +66,16 @@ function Board() {
     // 💰 `squaresCopy[square] = nextValue`
     //
     // 🐨 set the squares to your copy
-    const copy = [...squares]
-    copy[square] = nextValue
-    setSquares(copy)
+    const nextBoard = [...squares]
+    nextBoard[square] = nextValue
+    setBoards([...boards.slice(0, currentMove + 1), nextBoard])
+    setCurrentMove(currentMove + 1)
   }
 
   function restart() {
     // 🐨 reset the squares
     // 💰 `Array(9).fill(null)` will do it!
-    setSquares(Array(9).fill(null))
+    setBoards(initialState)
   }
 
   function renderSquare(i) {
@@ -60,28 +86,43 @@ function Board() {
     )
   }
 
+  /**
+   * Set the value of
+   */
+  function timeTravel(i) {
+    return function () {}
+  }
+
   return (
-    <div>
-      {/* 🐨 put the status in the div below */}
-      <div className="status">{status}</div>
-      <div className="board-row">
-        {renderSquare(0)}
-        {renderSquare(1)}
-        {renderSquare(2)}
+    <div className="board">
+      <div className="squares">
+        <div className="board-row">
+          {renderSquare(0)}
+          {renderSquare(1)}
+          {renderSquare(2)}
+        </div>
+        <div className="board-row">
+          {renderSquare(3)}
+          {renderSquare(4)}
+          {renderSquare(5)}
+        </div>
+        <div className="board-row">
+          {renderSquare(6)}
+          {renderSquare(7)}
+          {renderSquare(8)}
+        </div>
+        <button className="restart" onClick={restart}>
+          Restart
+        </button>
       </div>
-      <div className="board-row">
-        {renderSquare(3)}
-        {renderSquare(4)}
-        {renderSquare(5)}
+      <div className="status">
+        {status}
+        <BoardHistory
+          boards={boards}
+          onClick={timeTravel}
+          currentMove={currentMove}
+        />
       </div>
-      <div className="board-row">
-        {renderSquare(6)}
-        {renderSquare(7)}
-        {renderSquare(8)}
-      </div>
-      <button className="restart" onClick={restart}>
-        Restart
-      </button>
     </div>
   )
 }
@@ -107,7 +148,6 @@ function calculateStatus(winner, squares, nextValue) {
 
 // eslint-disable-next-line no-unused-vars
 function calculateNextValue(squares) {
-  debugger;
   const xSquaresCount = squares.filter(r => r === 'X').length
   const oSquaresCount = squares.filter(r => r === 'O').length
   return oSquaresCount === xSquaresCount ? 'X' : 'O'
