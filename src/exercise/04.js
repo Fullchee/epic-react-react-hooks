@@ -90,7 +90,9 @@ function Board() {
    * Set the value of
    */
   function timeTravel(i) {
-    return function () {}
+    return function () {
+      setCurrentMove(i)
+    }
   }
 
   return (
