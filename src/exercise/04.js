@@ -24,7 +24,7 @@ function BoardHistory({boards, onClick, currentMove}) {
     <ol>
       {boards.map((board, i) => {
         return (
-          <li>
+          <li key={i}>
             <button disabled={i === currentMove} onClick={onClick(i)}>
               {calculateButtonText(i)}
             </button>
