@@ -2,10 +2,6 @@
 // http://localhost:3000/isolated/exercise/06.js
 
 import * as React from 'react'
-// 🐨 you'll want the following additional things from '../pokemon':
-// fetchPokemon: the function we call to get the pokemon info
-// PokemonInfoFallback: the thing we show while we're loading the pokemon info
-// PokemonDataView: the stuff we use to display the pokemon info
 import {
   PokemonForm,
   fetchPokemon,
@@ -16,71 +12,49 @@ import {
 } from '../pokemon'
 
 class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props)
-
-    this.state = {
-      hasError: false,
-    }
-  }
-
-  static getDerivedStateFromProps(error) {
-    return {
-      hasError: true,
-    }
+  state = {error: null}
+  static getDerivedStateFromError(error) {
+    return {error}
   }
   render() {
-    if (this.state.hasError) {
-      return <h1>There's a problem, trainer!</h1>
+    const {error} = this.state
+    if (error) {
+      return (
+        <div role="alert">
+          There was an error:{' '}
+          <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
+        </div>
+      )
     }
     return this.props.children
   }
 }
 
 function PokemonInfo({pokemonName}) {
-  // 🐨 Have state for the pokemon (null)
   // idle, pending, resolved, rejected
   const [state, setState] = React.useState({
     status: 'idle',
-    error: {},
+    error: null,
     pokemon: null,
   })
 
   const {status, error, pokemon} = state
-  // 🐨 use React.useEffect where the callback should be called whenever the
-  // pokemon name changes.
   React.useEffect(() => {
     if (!pokemonName) {
       return
     }
-    setState({...state, status: 'pending'})
+    setState({status: 'pending'})
     fetchPokemon(pokemonName)
       .then(pokemonData => {
-        setState({...state, pokemon: pokemonData, status: 'resolved'})
+        setState({pokemon: pokemonData, status: 'resolved'})
       })
       .catch(error => {
-        setState({...state, error: error, status: 'rejected'})
+        setState({error: error, status: 'rejected'})
       })
-  }, [pokemonName]) // exhaustive deps
-  // 💰 DON'T FORGET THE DEPENDENCIES ARRAY!
-  // 💰 if the pokemonName is falsy (an empty string) then don't bother making the request (exit early).
-  // 🐨 before calling `fetchPokemon`, clear the current pokemon state by setting it to null
-  // 💰 Use the `fetchPokemon` function to fetch a pokemon by its name:
-  //   fetchPokemon('Pikachu').then(
-  //     pokemonData => { /* update all the state here */},
-  //   )
-  // 🐨 return the following things based on the `pokemon` state and `pokemonName` prop:
-  //   1. no pokemonName: 'Submit a pokemon'
-  //   2. pokemonName but no pokemon: <PokemonInfoFallback name={pokemonName} />
-  //   3. pokemon: <PokemonDataView pokemon={pokemon} />
+  }, [pokemonName]) // exhaustive deps error doesn't appear when I don't have the ...state
 
   if (status === 'rejected') {
-    return (
-      <div role="alert">
-        There was an error:{' '}
-        <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
-      </div>
-    )
+    throw error
   } else if (!pokemonName) {
     return 'Submit a pokemon'
   } else if (!pokemon) {
