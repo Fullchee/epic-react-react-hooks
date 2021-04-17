@@ -15,6 +15,28 @@ import {
   ErrorFallback,
 } from '../pokemon'
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      hasError: false,
+    }
+  }
+
+  static getDerivedStateFromProps(error) {
+    return {
+      hasError: true,
+    }
+  }
+  render() {
+    if (this.state.hasError) {
+      return <h1>There's a problem, trainer!</h1>
+    }
+    return this.props.children
+  }
+}
+
 function PokemonInfo({pokemonName}) {
   // 🐨 Have state for the pokemon (null)
   // idle, pending, resolved, rejected
@@ -24,7 +46,7 @@ function PokemonInfo({pokemonName}) {
     pokemon: null,
   })
 
-  const {status, error, pokemon} = state;
+  const {status, error, pokemon} = state
   // 🐨 use React.useEffect where the callback should be called whenever the
   // pokemon name changes.
   React.useEffect(() => {
@@ -39,7 +61,7 @@ function PokemonInfo({pokemonName}) {
       .catch(error => {
         setState({...state, error: error, status: 'rejected'})
       })
-  }, [pokemonName])
+  }, [pokemonName]) // exhaustive deps
   // 💰 DON'T FORGET THE DEPENDENCIES ARRAY!
   // 💰 if the pokemonName is falsy (an empty string) then don't bother making the request (exit early).
   // 🐨 before calling `fetchPokemon`, clear the current pokemon state by setting it to null
@@ -80,7 +102,9 @@ function App() {
       <PokemonForm pokemonName={pokemonName} onSubmit={handleSubmit} />
       <hr />
       <div className="pokemon-info">
-        <PokemonInfo pokemonName={pokemonName} />
+        <ErrorBoundary>
+          <PokemonInfo pokemonName={pokemonName} />
+        </ErrorBoundary>
       </div>
     </div>
   )
