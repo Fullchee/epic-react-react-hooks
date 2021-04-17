@@ -17,6 +17,8 @@ import {
 
 function PokemonInfo({pokemonName}) {
   // 🐨 Have state for the pokemon (null)
+  // idle, pending, resolved, rejected
+  const [status, setStatus] = React.useState('idle')
   const [error, setError] = React.useState(false)
   const [pokemon, setPokemon] = React.useState('')
   // 🐨 use React.useEffect where the callback should be called whenever the
@@ -25,13 +27,14 @@ function PokemonInfo({pokemonName}) {
     if (!pokemonName) {
       return
     }
-    setPokemon('') // ensure the state is back
+    setStatus('pending')
     fetchPokemon(pokemonName)
       .then(pokemonData => {
         setPokemon(pokemonData)
-        setError({})
+        setStatus('resolved')
       })
       .catch(error => {
+        setStatus('rejected')
         setError(error)
       })
   }, [pokemonName])
@@ -47,7 +50,7 @@ function PokemonInfo({pokemonName}) {
   //   2. pokemonName but no pokemon: <PokemonInfoFallback name={pokemonName} />
   //   3. pokemon: <PokemonDataView pokemon={pokemon} />
 
-  if (error) {
+  if (status === 'rejected') {
     return (
       <div role="alert">
         There was an error:{' '}
