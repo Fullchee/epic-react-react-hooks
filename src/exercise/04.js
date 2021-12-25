@@ -4,13 +4,34 @@
 import React from 'react'
 import {useLocalStorageState} from '../utils'
 
+function History({history, moveNumber, setBoardToPointInHistory}) {
+  debugger
+  return (
+    <div>
+      {history.map((snapshot, i) => (
+        <div key={JSON.stringify(snapshot)}>
+          <button
+            onClick={() => setBoardToPointInHistory(i)}
+            disabled={moveNumber === i}
+          >
+            Go to {i === 0 ? 'game start' : `move #${i}`}
+            {moveNumber === i ? ' (current)' : ''}
+          </button>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function Board() {
   const [squares, setSquares] = useLocalStorageState('squares', () =>
     Array(9).fill(null),
   )
+  const [history, setHistory] = useLocalStorageState('history', [squares])
   const nextValue = calculateNextValue(squares)
   const winner = calculateWinner(squares)
   const status = calculateStatus(winner, squares, nextValue)
+  const moveNumber = squares.filter(Boolean).length
   function selectSquare(square) {
     if (squares[square] !== null || winner) {
       return
@@ -18,10 +39,13 @@ function Board() {
     let squaresCopy = [...squares]
     squaresCopy[square] = nextValue
     setSquares([...squaresCopy])
+    setHistory([...history, squaresCopy])
   }
 
   function restart() {
-    setSquares(Array(9).fill(null))
+    const emptyBoard = Array(9).fill(null)
+    setSquares(emptyBoard)
+    setHistory([emptyBoard])
   }
 
   function renderSquare(i) {
@@ -30,6 +54,10 @@ function Board() {
         {squares[i]}
       </button>
     )
+  }
+
+  function setBoardToPointInHistory(moveNumber) {
+    setSquares(history[moveNumber])
   }
 
   return (
@@ -53,6 +81,11 @@ function Board() {
       <button className="restart" onClick={restart}>
         restart
       </button>
+      <History
+        history={history}
+        moveNumber={moveNumber}
+        setBoardToPointInHistory={setBoardToPointInHistory}
+      />
     </div>
   )
 }
