@@ -12,4 +12,6 @@ useEffect
   - eg: create a variable with a stub error message to make sure that the error shows up
 - Error Boundaries
   - can take in a FallbackComponent arg
-- 
+  - reseting the error boundary with a key isn't great because it'll mount and unmount every time the key is updated
+  - we can pass resetErrorBoundary prop that gets triggered in the FallbackComponent
+  - resetKeys prop works as well

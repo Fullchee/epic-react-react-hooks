@@ -10,27 +10,13 @@ import {
   PokemonErrorBoundary,
 } from '../pokemon'
 
+import {ErrorBoundary} from 'react-error-boundary'
+
 const STATUS = {
   IDLE: 'IDLE',
   PENDING: 'PENDING',
   REJECTED: 'REJECTED',
   RESOLVED: 'RESOLVED',
-}
-
-class ErrorBoundary extends React.Component {
-  state = {error: null}
-
-  static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI
-    return {error}
-  }
-  render() {
-    const {error} = this.state
-    if (error) {
-      return <this.props.FallbackComponent error={error} />
-    }
-    return this.props.children
-  }
 }
 
 function ErrorFallback({error}) {
@@ -95,7 +81,7 @@ function App() {
       <PokemonForm pokemonName={pokemonName} onSubmit={handleSubmit} />
       <hr />
       <div className="pokemon-info">
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
+        <ErrorBoundary key={pokemonName} FallbackComponent={ErrorFallback}>
           <PokemonInfo pokemonName={pokemonName} />
         </ErrorBoundary>
       </div>
