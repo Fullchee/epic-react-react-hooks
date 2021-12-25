@@ -10,21 +10,29 @@ import {
   PokemonErrorBoundary,
 } from '../pokemon'
 
+const STATUS = {
+  IDLE: 'IDLE',
+  PENDING: 'PENDING',
+  REJECTED: 'REJECTED',
+  RESOLVED: 'RESOLVED',
+}
+
 function PokemonInfo({pokemonName}) {
   const [pokemon, setPokemon] = React.useState(null)
   const [error, setError] = React.useState('')
-  // 🐨 use React.useEffect where the callback should be called whenever the
-  // pokemon name changes.
+  const [status, setStatus] = React.useState(STATUS.IDLE)
   React.useEffect(() => {
     if (!pokemonName) {
-      return;
+      return
     }
+    setStatus(STATUS.PENDING)
     fetchPokemon(pokemonName)
       .then(pokemonData => {
         setPokemon(pokemonData)
-        setError('')
+        setStatus(STATUS.RESOLVED)
       })
       .catch(error => {
+        setStatus(STATUS.REJECTED)
         setError(error)
       })
     return () => {
@@ -32,7 +40,13 @@ function PokemonInfo({pokemonName}) {
     }
   }, [pokemonName])
 
-  if (error) {
+  if (status === STATUS.IDLE) {
+    return 'Submit a pokemon'
+  }
+  if (status === STATUS.PENDING) {
+    return <PokemonInfoFallback name={pokemonName} />
+  }
+  if (status === STATUS.REJECTED) {
     return (
       <div role="alert">
         There was an error:{' '}
@@ -40,14 +54,10 @@ function PokemonInfo({pokemonName}) {
       </div>
     )
   }
-
-  if (!pokemonName) {
-    return 'Submit a pokemon'
+  if (status === STATUS.RESOLVED) {
+    return <PokemonDataView pokemon={pokemon} />
   }
-  if (!pokemon) {
-    return <PokemonInfoFallback name={pokemonName} />
-  }
-  return <PokemonDataView pokemon={pokemon} />
+  throw new Error("Shouldn't get here")
 }
 
 function App() {
