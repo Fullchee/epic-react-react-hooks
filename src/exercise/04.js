@@ -2,17 +2,50 @@
 // http://localhost:3000/isolated/exercise/04.js
 
 import * as React from 'react'
+import {useLocalStorageState} from '../utils'
+
+function BoardHistory({boards, onClick, currentMove}) {
+  const calculateButtonText = i => {
+    let result = 'Go to'
+
+    if (i === 0) {
+      result += ' game start'
+    } else {
+      result += ` move #${i}`
+    }
+
+    if (i === currentMove) {
+      result += ' (current)'
+    }
+    return result
+  }
+
+  return (
+    <ol>
+      {boards.map((board, i) => {
+        return (
+          <li key={i}>
+            <button disabled={i === currentMove} onClick={onClick(i)}>
+              {calculateButtonText(i)}
+            </button>
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
 
 function Board() {
   // 🐨 squares is the state for this component. Add useState for squares
-  const squares = Array(9).fill(null)
+  // const squares = Array(9).fill(null)
+  const initialState = [Array(9).fill(null)]
+  const [boards, setBoards] = useLocalStorageState('boards', initialState)
+  const [currentMove, setCurrentMove] = React.useState(0)
+  const squares = boards[currentMove]
 
-  // 🐨 We'll need the following bits of derived state:
-  // - nextValue ('X' or 'O')
-  // - winner ('X', 'O', or null)
-  // - status (`Winner: ${winner}`, `Scratch: Cat's game`, or `Next player: ${nextValue}`)
-  // 💰 I've written the calculations for you! So you can use my utilities
-  // below to create these variables
+  const nextValue = calculateNextValue(squares)
+  const winner = calculateWinner(squares)
+  const status = calculateStatus(winner, squares, nextValue)
 
   // This is the function your square click handler will call. `square` should
   // be an index. So if they click the center square, this will be `4`.
@@ -20,7 +53,9 @@ function Board() {
     // 🐨 first, if there's already winner or there's already a value at the
     // given square index (like someone clicked a square that's already been
     // clicked), then return early so we don't make any state changes
-    //
+    if (winner || squares[square]) {
+      return
+    }
     // 🦉 It's typically a bad idea to mutate or directly change state in React.
     // Doing so can lead to subtle bugs that can easily slip into production.
     //
@@ -31,11 +66,16 @@ function Board() {
     // 💰 `squaresCopy[square] = nextValue`
     //
     // 🐨 set the squares to your copy
+    const nextBoard = [...squares]
+    nextBoard[square] = nextValue
+    setBoards([...boards.slice(0, currentMove + 1), nextBoard])
+    setCurrentMove(currentMove + 1)
   }
 
   function restart() {
     // 🐨 reset the squares
     // 💰 `Array(9).fill(null)` will do it!
+    setBoards(initialState)
   }
 
   function renderSquare(i) {
@@ -46,28 +86,45 @@ function Board() {
     )
   }
 
+  /**
+   * Set the value of
+   */
+  function timeTravel(i) {
+    return function () {
+      setCurrentMove(i)
+    }
+  }
+
   return (
-    <div>
-      {/* 🐨 put the status in the div below */}
-      <div className="status">STATUS</div>
-      <div className="board-row">
-        {renderSquare(0)}
-        {renderSquare(1)}
-        {renderSquare(2)}
+    <div className="board">
+      <div className="squares">
+        <div className="board-row">
+          {renderSquare(0)}
+          {renderSquare(1)}
+          {renderSquare(2)}
+        </div>
+        <div className="board-row">
+          {renderSquare(3)}
+          {renderSquare(4)}
+          {renderSquare(5)}
+        </div>
+        <div className="board-row">
+          {renderSquare(6)}
+          {renderSquare(7)}
+          {renderSquare(8)}
+        </div>
+        <button className="restart" onClick={restart}>
+          Restart
+        </button>
       </div>
-      <div className="board-row">
-        {renderSquare(3)}
-        {renderSquare(4)}
-        {renderSquare(5)}
+      <div className="status">
+        {status}
+        <BoardHistory
+          boards={boards}
+          onClick={timeTravel}
+          currentMove={currentMove}
+        />
       </div>
-      <div className="board-row">
-        {renderSquare(6)}
-        {renderSquare(7)}
-        {renderSquare(8)}
-      </div>
-      <button className="restart" onClick={restart}>
-        restart
-      </button>
     </div>
   )
 }
