@@ -16,6 +16,9 @@ function PokemonInfo({pokemonName}) {
   // 🐨 use React.useEffect where the callback should be called whenever the
   // pokemon name changes.
   React.useEffect(() => {
+    if (!pokemonName) {
+      return;
+    }
     fetchPokemon(pokemonName)
       .then(pokemonData => {
         setPokemon(pokemonData)
