@@ -3,44 +3,14 @@
 
 import * as React from 'react'
 
-const useLocalStorageState = (
-  key,
-  initialValue,
-  {serialize = JSON.stringify, deserialize = JSON.parse} = {},
-) => {
-  const [item, setItem] = React.useState(() => {
-    const localStorageValue = window.localStorage.getItem(key)
-    if (typeof localStorageValue !== undefined) {
-      deserialize(localStorageValue)
-    }
-    // expensive init computation (more expensive than localStorage.get())
-    // give it an init function that only gets called on init
-    return typeof initialValue === 'function' ? initialValue() : initialValue
-  })
-
-  // object you can change without re-rendering
-  const prevKeyRef = React.useRef(key)
+function Greeting({initialName = ''}) {
+  const [name, setName] = React.useState(
+    () => window.localStorage.getItem('name') ?? initialName,
+  )
 
   React.useEffect(() => {
-    const prevKey = prevKeyRef.current
-    if (key !== prevKey) {
-      window.localStorage.removeItem(prevKey)
-    }
-    prevKeyRef.current = key
-    window.localStorage.setItem(serialize(key), item)
-  }, [key, item, serialize])
-
-  return [item, setItem]
-}
-
-function Greeting({initialName = ''}) {
-  // 🐨 initialize the state to the value from localStorage
-  // 💰 window.localStorage.getItem('name') ?? initialName
-  const [name, setName] = React.useState(initialName)
-
-  // 🐨 Here's where you'll use `React.useEffect`.
-  // The callback should set the `name` in localStorage.
-  // 💰 window.localStorage.setItem('name', name)
+    window.localStorage.setItem('name', name)
+  }, [name])
 
   function handleChange(event) {
     setName(event.target.value)
