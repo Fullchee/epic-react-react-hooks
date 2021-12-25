@@ -5,10 +5,10 @@ import * as React from 'react'
 
 const useLocalStorageState = (key, initialValue) => {
   const [value, setValue] = React.useState(
-    () => window.localStorage.getItem(key) ?? initialValue,
+    () => JSON.parse(window.localStorage.getItem(key)) ?? initialValue,
   )
   React.useEffect(() => {
-    window.localStorage.setItem(key, value)
+    window.localStorage.setItem(key, JSON.stringify(value))
   }, [key, value])
   return [value, setValue]
 }
