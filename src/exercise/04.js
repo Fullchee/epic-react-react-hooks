@@ -5,7 +5,6 @@ import React from 'react'
 import {useLocalStorageState} from '../utils'
 
 function History({history, moveNumber, setBoardToPointInHistory}) {
-  debugger
   return (
     <div>
       {history.map((snapshot, i) => (
@@ -24,10 +23,11 @@ function History({history, moveNumber, setBoardToPointInHistory}) {
 }
 
 function Board() {
-  const [squares, setSquares] = useLocalStorageState('squares', () =>
+  const [history, setHistory] = useLocalStorageState('history', [
     Array(9).fill(null),
-  )
-  const [history, setHistory] = useLocalStorageState('history', [squares])
+  ])
+  const [turnNumber, setTurnNumber] = useLocalStorageState('turnNumber', 0)
+  const squares = history[turnNumber]
   const nextValue = calculateNextValue(squares)
   const winner = calculateWinner(squares)
   const status = calculateStatus(winner, squares, nextValue)
@@ -38,13 +38,13 @@ function Board() {
     }
     let squaresCopy = [...squares]
     squaresCopy[square] = nextValue
-    setSquares([...squaresCopy])
-    setHistory([...history, squaresCopy])
+    setTurnNumber(turnNumber => turnNumber + 1)
+    setHistory([...history.slice(0, turnNumber + 1), squaresCopy])
   }
 
   function restart() {
     const emptyBoard = Array(9).fill(null)
-    setSquares(emptyBoard)
+    setTurnNumber(0)
     setHistory([emptyBoard])
   }
 
@@ -57,7 +57,7 @@ function Board() {
   }
 
   function setBoardToPointInHistory(moveNumber) {
-    setSquares(history[moveNumber])
+    setTurnNumber(moveNumber)
   }
 
   return (
